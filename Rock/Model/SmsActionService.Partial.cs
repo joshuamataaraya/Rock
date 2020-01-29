@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Rock.Communication.SmsActions;
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -49,7 +50,7 @@ namespace Rock.Model
         {
             if ( smsPipelineId == null )
             {
-                var minSmsPipelineId = new SmsPipelineService( new Data.RockContext() )
+                var minSmsPipelineId = new SmsPipelineService( new RockContext() )
                                         .Queryable()
                                         .Where( p => p.IsActive )
                                         .Min( p => p.Id );
@@ -69,6 +70,28 @@ namespace Rock.Model
         {
             var errorMessage = string.Empty;
             var outcomes = new List<SmsActionOutcome>();
+            var smsPipelineService = new SmsPipelineService( new RockContext() );
+            var smsPipeline = smsPipelineService.Get( smsPipelineId );
+
+            if(smsPipeline == null )
+            {
+                errorMessage = string.Format( "The SMS Pipeline for SMS Pipeline Id {0} was null.", smsPipelineId );
+                outcomes.Add( new SmsActionOutcome
+                {
+                    ErrorMessage = errorMessage
+                } );
+                return outcomes;
+            }
+
+            if ( !smsPipeline.IsActive )
+            {
+                errorMessage = string.Format( "The SMS Pipeline for SMS Pipeline Id {0} was inactive.", smsPipelineId );
+                outcomes.Add( new SmsActionOutcome
+                {
+                    ErrorMessage = errorMessage
+                } );
+                return outcomes;
+            }
 
             var smsActions = SmsActionCache.All()
                 .Where( a => a.IsActive )
