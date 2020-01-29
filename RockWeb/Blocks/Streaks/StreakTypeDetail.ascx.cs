@@ -244,13 +244,13 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// The change event of the attendance structure selection
+        /// The change event of the linked activity structure selection
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         protected void ddlStructureType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            RenderAttendanceStructureControls();
+            RenderLinkedActivityStructureControls();
         }
 
         /// <summary>
@@ -587,7 +587,7 @@ namespace RockWeb.Blocks.Streaks
             dowPicker.SelectedDayOfWeek = streakType.FirstDayOfWeek;
             ddlStructureType.SelectedValue = structureType.HasValue ? structureType.Value.ToString() : string.Empty;
 
-            RenderAttendanceStructureControls();
+            RenderLinkedActivityStructureControls();
             SyncFrequencyControls();
         }
 
@@ -659,11 +659,11 @@ namespace RockWeb.Blocks.Streaks
                         structureName
                     ) );
 
-                descriptionList.Add( "Attendance Structure", structureString );
+                descriptionList.Add( "Linked Activity", structureString );
             }
             else
             {
-                descriptionList.Add( "Attendance Structure", "None" );
+                descriptionList.Add( "Linked Activity", "None" );
             }
 
             lStreakTypeDescription.Text = descriptionList.Html;
@@ -726,7 +726,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render the appropriate controls for the selected attendance structure type
+        /// Render the appropriate controls for the selected linked activity type
         /// </summary>
         private int? GetStructureEntityIdSelected()
         {
@@ -747,7 +747,12 @@ namespace RockWeb.Blocks.Streaks
                 case StreakStructureType.Group:
                     return gpStructureGroupPicker.GroupId;
                 case StreakStructureType.GroupTypePurpose:
-                    return dvpStructureGroupTypePurposePicker.SelectedDefinedValueId;
+                case StreakStructureType.InteractionMedium:
+                    return dvpStructureDefinedValuePicker.SelectedDefinedValueId;
+                case StreakStructureType.InteractionChannel:
+                    return icChannelPicker.SelectedValueAsInt();
+                case StreakStructureType.InteractionComponent:
+                    return icicComponentPicker.InteractionComponentId;
                 default:
                     throw new NotImplementedException( "The structure type is not implemented" );
             }
@@ -771,9 +776,9 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render the appropriate controls for the selected attendance structure type
+        /// Render the appropriate controls for the selected linked activity type
         /// </summary>
-        private void RenderAttendanceStructureControls()
+        private void RenderLinkedActivityStructureControls()
         {
             var isAddMode = IsAddMode();
 
@@ -783,8 +788,10 @@ namespace RockWeb.Blocks.Streaks
             }
 
             gpStructureGroupPicker.Visible = false;
-            dvpStructureGroupTypePurposePicker.Visible = false;
+            dvpStructureDefinedValuePicker.Visible = false;
             gtpStructureGroupTypePicker.Visible = false;
+            icicComponentPicker.Visible = false;
+            icChannelPicker.Visible = false;
 
             var streakType = isAddMode ? null : GetStreakType();
             var originalStructureType = isAddMode ? null : streakType.StructureType;
@@ -811,7 +818,16 @@ namespace RockWeb.Blocks.Streaks
                     RenderGroupTypeControl( structureEntityId );
                     break;
                 case StreakStructureType.GroupTypePurpose:
-                    RenderGroupTypePurposeControl( structureEntityId );
+                    RenderStructureDefinedValueControl( structureEntityId, "Group Type Purpose", Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE );
+                    break;
+                case StreakStructureType.InteractionChannel:
+                    RenderInteractionChannelControl( structureEntityId );
+                    break;
+                case StreakStructureType.InteractionComponent:
+                    RenderInteractionComponentControl( structureEntityId );
+                    break;
+                case StreakStructureType.InteractionMedium:
+                    RenderStructureDefinedValueControl( structureEntityId, "Interaction Medium", Rock.SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM );
                     break;
                 default:
                     throw new NotImplementedException( "The structure type is not implemented" );
@@ -819,7 +835,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render control for attendance structure of check in config
+        /// Render control for linked activity structure of check in config
         /// </summary>
         private void RenderCheckinConfigControl( int? structureEntityId )
         {
@@ -838,7 +854,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render control for attendance structure of group
+        /// Render control for linked activity structure of group
         /// </summary>
         private void RenderGroupControl( int? structureEntityId )
         {
@@ -848,7 +864,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render control for attendance structure of group type
+        /// Render control for linked activity structure of group type
         /// </summary>
         private void RenderGroupTypeControl( int? structureEntityId )
         {
@@ -865,14 +881,35 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render control for attendance structure of group type purpose
+        /// Render control for linked activity structure of group type purpose or interaction medium
         /// </summary>
-        private void RenderGroupTypePurposeControl( int? structureEntityId )
+        private void RenderStructureDefinedValueControl( int? structureEntityId, string label, string definedTypeGuidString )
         {
-            dvpStructureGroupTypePurposePicker.Label = "Group Type Purpose";
-            dvpStructureGroupTypePurposePicker.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ).Id;
-            dvpStructureGroupTypePurposePicker.SelectedDefinedValueId = structureEntityId;
-            dvpStructureGroupTypePurposePicker.Visible = true;
+            dvpStructureDefinedValuePicker.Label = label;
+            dvpStructureDefinedValuePicker.DefinedTypeId = DefinedTypeCache.Get( definedTypeGuidString ).Id;
+            dvpStructureDefinedValuePicker.SelectedDefinedValueId = structureEntityId;
+            dvpStructureDefinedValuePicker.Visible = true;
+        }
+
+        /// <summary>
+        /// Renders the interaction channel control.
+        /// </summary>
+        /// <param name="structureEntityId">The structure entity identifier.</param>
+        private void RenderInteractionChannelControl( int? structureEntityId )
+        {
+            icChannelPicker.Label = "Interaction Channel";
+            icChannelPicker.SetValue( structureEntityId );
+            icChannelPicker.Visible = true;
+        }
+
+        /// <summary>
+        /// Renders the interaction component control.
+        /// </summary>
+        /// <param name="structureEntityId">The structure entity identifier.</param>
+        private void RenderInteractionComponentControl( int? structureEntityId )
+        {
+            icicComponentPicker.InteractionComponentId = structureEntityId;
+            icicComponentPicker.Visible = true;
         }
 
         #endregion Internal Methods
@@ -996,7 +1033,7 @@ namespace RockWeb.Blocks.Streaks
         private Streak _streak = null;
 
         /// <summary>
-        /// Get the name of the streak type attendance structure
+        /// Get the name of the streak type linked activity structure
         /// </summary>
         /// <returns></returns>
         private string GetStreakStructureName()
