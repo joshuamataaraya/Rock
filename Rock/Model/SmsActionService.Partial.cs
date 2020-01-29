@@ -53,9 +53,16 @@ namespace Rock.Model
                 var minSmsPipelineId = new SmsPipelineService( new RockContext() )
                                         .Queryable()
                                         .Where( p => p.IsActive )
-                                        .Min( p => p.Id );
+                                        .Select( p => ( int? ) p.Id )
+                                        .Min( p => p );
 
-                return ProcessIncomingMessage( message, minSmsPipelineId );
+                if ( minSmsPipelineId == null )
+                {
+                    var errorMessage = string.Format( "No default SMS Pipeline could be found." );
+                    return CreateErrorOutcomesWithLogging( errorMessage );
+                }
+
+                return ProcessIncomingMessage( message, minSmsPipelineId.Value );
             }
 
             return ProcessIncomingMessage( message, smsPipelineId.Value );
@@ -73,24 +80,16 @@ namespace Rock.Model
             var smsPipelineService = new SmsPipelineService( new RockContext() );
             var smsPipeline = smsPipelineService.Get( smsPipelineId );
 
-            if(smsPipeline == null )
+            if ( smsPipeline == null )
             {
                 errorMessage = string.Format( "The SMS Pipeline for SMS Pipeline Id {0} was null.", smsPipelineId );
-                outcomes.Add( new SmsActionOutcome
-                {
-                    ErrorMessage = errorMessage
-                } );
-                return outcomes;
+                return CreateErrorOutcomesWithLogging( errorMessage );
             }
 
             if ( !smsPipeline.IsActive )
             {
                 errorMessage = string.Format( "The SMS Pipeline for SMS Pipeline Id {0} was inactive.", smsPipelineId );
-                outcomes.Add( new SmsActionOutcome
-                {
-                    ErrorMessage = errorMessage
-                } );
-                return outcomes;
+                return CreateErrorOutcomesWithLogging( errorMessage );
             }
 
             var smsActions = SmsActionCache.All()
@@ -156,6 +155,23 @@ namespace Rock.Model
             }
 
             return outcomes;
+        }
+
+        /// <summary>
+        /// Creates the error outcomes with logging.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private static List<SmsActionOutcome> CreateErrorOutcomesWithLogging( string errorMessage )
+        {
+            LogIfError( errorMessage );
+            return new List<SmsActionOutcome>
+            {
+                new SmsActionOutcome
+                {
+                    ErrorMessage = errorMessage
+                }
+            };
         }
 
         /// <summary>
