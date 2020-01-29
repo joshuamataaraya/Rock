@@ -87,7 +87,7 @@ namespace Rock.Data
                         action.Invoke();
                         dbContextTransaction.Commit();
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         dbContextTransaction.Rollback();
                         throw;
