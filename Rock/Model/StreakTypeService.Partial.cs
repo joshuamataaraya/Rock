@@ -308,9 +308,68 @@ namespace Rock.Model
         /// </summary>
         /// <param name="streakTypeId"></param>
         /// <param name="errorMessage"></param>
+        [Obsolete( "Use the overload with Progress instead" )]
+        [RockObsolete( "1.10" )]
         public static void RebuildStreakTypeFromAttendance( int streakTypeId, out string errorMessage )
         {
             RebuildStreakTypeFromAttendance( null, streakTypeId, out errorMessage );
+        }
+
+        /// <summary>
+        /// Rebuild the streak type occurrence map and streak maps from the linked activity structure of the streak type.
+        /// This method makes it's own Rock Context and saves changes.
+        /// </summary>
+        /// <param name="progress"></param>
+        /// <param name="streakTypeId"></param>
+        /// <param name="errorMessage"></param>
+        public static void RebuildStreakType( IProgress<int?> progress, int streakTypeId, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            var streakTypeCache = StreakTypeCache.Get( streakTypeId );
+
+            // Validate the parameters
+            if ( streakTypeCache == null )
+            {
+                errorMessage = "A valid streak type cache is required";
+                return;
+            }
+
+            if ( !streakTypeCache.IsActive )
+            {
+                errorMessage = "An active streak type is required";
+                return;
+            }
+
+            if ( !streakTypeCache.StructureType.HasValue )
+            {
+                errorMessage = "A streak type linked activity structure is required";
+                return;
+            }
+
+            if (streakTypeCache.StructureType != StreakStructureType.AnyAttendance && !streakTypeCache.StructureEntityId.HasValue)
+            {
+                errorMessage = "A streak type linked activity entity id is required";
+                return;
+            }
+
+            switch ( streakTypeCache.StructureType.Value )
+            {
+                case StreakStructureType.AnyAttendance:
+                case StreakStructureType.CheckInConfig:
+                case StreakStructureType.Group:
+                case StreakStructureType.GroupType:
+                case StreakStructureType.GroupTypePurpose:
+                    RebuildStreakTypeFromAttendance( progress, streakTypeCache, out errorMessage );
+                    break;
+                case StreakStructureType.InteractionChannel:
+                case StreakStructureType.InteractionComponent:
+                case StreakStructureType.InteractionMedium:
+                    RebuildStreakTypeFromInteraction( progress, streakTypeCache, out errorMessage );
+                    break;
+                default:
+                    errorMessage = $"The streak type structure {streakTypeCache.StructureType.Value} is not supported";
+                    break;
+            }
         }
 
         /// <summary>
@@ -320,32 +379,53 @@ namespace Rock.Model
         /// <param name="progress">The progress.</param>
         /// <param name="streakTypeId">The streak type identifier.</param>
         /// <param name="errorMessage">The error message.</param>
+        [Obsolete( "Use the RebuildStreakType method instead" )]
+        [RockObsolete( "1.10" )]
         public static void RebuildStreakTypeFromAttendance( IProgress<int?> progress, int streakTypeId, out string errorMessage )
         {
-            errorMessage = string.Empty;
-            var rockContext = new RockContext();
-            var streakTypeService = new StreakTypeService( rockContext );
-            var streakType = streakTypeService.Get( streakTypeId );
             var streakTypeCache = StreakTypeCache.Get( streakTypeId );
 
             // Validate the parameters
-            if ( streakType == null )
-            {
-                errorMessage = "A valid streak type is required";
-                return;
-            }
-
             if ( streakTypeCache == null )
             {
                 errorMessage = "A valid streak type cache is required";
                 return;
             }
 
-            if ( !streakType.IsActive )
+            if ( !streakTypeCache.IsActive )
             {
                 errorMessage = "An active streak type is required";
                 return;
             }
+
+            if ( !streakTypeCache.StructureType.HasValue )
+            {
+                errorMessage = "A streak type linked activity structure is required";
+                return;
+            }
+
+            if ( streakTypeCache.StructureType != StreakStructureType.AnyAttendance && !streakTypeCache.StructureEntityId.HasValue )
+            {
+                errorMessage = "A streak type linked activity entity id is required";
+                return;
+            }
+
+            RebuildStreakTypeFromAttendance( progress, streakTypeCache, out errorMessage );
+        }
+
+        /// <summary>
+        /// Rebuild the streak type occurrence map and streak maps from the attendance structure of the streak type.
+        /// This method makes it's own Rock Context and saves changes.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="streakTypeCache">The streak type.</param>
+        /// <param name="errorMessage">The error message.</param>
+        private static void RebuildStreakTypeFromAttendance( IProgress<int?> progress, StreakTypeCache streakTypeCache, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            var rockContext = new RockContext();
+            var streakTypeService = new StreakTypeService( rockContext );
+            var streakType = streakTypeService.Get( streakTypeCache.Id );
 
             // Get the occurrences that did occur
             var occurrenceService = new AttendanceOccurrenceService( rockContext );
@@ -401,7 +481,7 @@ namespace Rock.Model
 
             streakType.OccurrenceMap = occurrenceMap;
             rockContext.SaveChanges();
-            streakTypeCache = StreakTypeCache.Get( streakTypeId );
+            streakTypeCache = StreakTypeCache.Get( streakTypeCache.Id );
 
             // Get all of the attendees for the streak type
             var personIds = occurrenceQuery
@@ -453,46 +533,19 @@ namespace Rock.Model
         /// This method makes it's own Rock Context and saves changes.
         /// </summary>
         /// <param name="progress">The progress.</param>
-        /// <param name="streakTypeId">The streak type identifier.</param>
+        /// <param name="streakTypeCache">The streak type cache.</param>
         /// <param name="errorMessage">The error message.</param>
-        public static void RebuildStreakTypeFromInteraction( IProgress<int?> progress, int streakTypeId, out string errorMessage )
+        private static void RebuildStreakTypeFromInteraction( IProgress<int?> progress, StreakTypeCache streakTypeCache, out string errorMessage )
         {
             errorMessage = string.Empty;
             var rockContext = new RockContext();
             var streakTypeService = new StreakTypeService( rockContext );
-            var streakType = streakTypeService.Get( streakTypeId );
-            var streakTypeCache = StreakTypeCache.Get( streakTypeId );
+            var streakType = streakTypeService.Get( streakTypeCache.Id );
 
             // Validate the parameters
             if ( streakType == null )
             {
                 errorMessage = "A valid streak type is required";
-                return;
-            }
-
-            if ( streakTypeCache == null )
-            {
-                errorMessage = "A valid streak type cache is required";
-                return;
-            }
-
-            if ( !streakType.IsActive )
-            {
-                errorMessage = "An active streak type is required";
-                return;
-            }
-
-            if ( streakType.StructureType != StreakStructureType.InteractionChannel &&
-                streakType.StructureType != StreakStructureType.InteractionComponent &&
-                streakType.StructureType != StreakStructureType.InteractionMedium )
-            {
-                errorMessage = "An interaction related structure is required";
-                return;
-            }
-
-            if ( !streakType.StructureEntityId.HasValue )
-            {
-                errorMessage = "A structure entity id is required";
                 return;
             }
 
@@ -528,7 +581,7 @@ namespace Rock.Model
 
             streakType.OccurrenceMap = occurrenceMap;
             rockContext.SaveChanges();
-            streakTypeCache = StreakTypeCache.Get( streakTypeId );
+            streakTypeCache = StreakTypeCache.Get( streakTypeCache.Id );
 
             // Get all of the attendees for the streak type
             var personIds = interactionQuery

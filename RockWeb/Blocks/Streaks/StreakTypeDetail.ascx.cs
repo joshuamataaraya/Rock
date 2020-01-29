@@ -641,6 +641,8 @@ namespace RockWeb.Blocks.Streaks
             lReadOnlyTitle.Text = streakType.Name.FormatAsHtmlTitle();
             hlInactive.Visible = !streakType.IsActive;
             btnRebuild.Enabled = streakType.IsActive;
+            btnRebuild.Visible = streakType.StructureType.HasValue &&
+                ( streakType.StructureType == StreakStructureType.AnyAttendance || streakType.StructureEntityId.HasValue );
 
             var descriptionList = new DescriptionList();
             descriptionList.Add( "Description", streakType.Description );
