@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -29,15 +29,15 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.GroupMember", "CommunicationPreference", c => c.Int(nullable: false));
+            AddColumn( "dbo.GroupMember", "CommunicationPreference", c => c.Int( nullable: false ) );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropColumn("dbo.GroupMember", "CommunicationPreference");
+            DropColumn( "dbo.GroupMember", "CommunicationPreference" );
         }
     }
 }
