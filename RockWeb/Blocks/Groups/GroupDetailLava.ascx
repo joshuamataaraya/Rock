@@ -4,9 +4,9 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlGroupView" runat="server">
-            <div class="row" runat="server" id="dCommunicationsPreference">
+            <div class="row pull-right" runat="server" id="dCommunicationsPreference">
                 <div class="col-md-12">
-                    Your communication preference: <Rock:Toggle ID="tglCommunicationPreference" runat="server" OnText="Email" OffText="SMS" ButtonSizeCssClass="btn-xs" OnCssClass="btn-info" OffCssClass="btn-info" OnCheckedChanged="tglCommunicationPreference_CheckedChanged" />
+                    Your communication preference: <Rock:Toggle ID="tglCommunicationPreference" CssClass="pull-right" runat="server" OnText="Email" OffText="SMS" ButtonSizeCssClass="btn-xs" OnCssClass="btn-info" OffCssClass="btn-info" OnCheckedChanged="tglCommunicationPreference_CheckedChanged" />
                 </div>
             </div>
             
