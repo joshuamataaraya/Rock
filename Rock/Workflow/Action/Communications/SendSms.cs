@@ -109,15 +109,9 @@ namespace Rock.Workflow.Action
                                         }
                                         else
                                         {
-                                            string smsNumber = phoneNumber.Number;
-                                            if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
-                                            {
-                                                smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                            }
-
                                             var person = new PersonAliasService( rockContext ).GetPerson( personAliasGuid );
 
-                                            var recipient = new RockSMSMessageRecipient( person, smsNumber, mergeFields );
+                                            var recipient = new RockSMSMessageRecipient( person, phoneNumber.ToSmsNumber(), mergeFields );
                                             recipients.Add( recipient );
                                             recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
                                         }
@@ -159,14 +153,8 @@ namespace Rock.Workflow.Action
                                                 .FirstOrDefault();
                                             if ( phoneNumber != null )
                                             {
-                                                string smsNumber = phoneNumber.Number;
-                                                if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
-                                                {
-                                                    smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                                }
-
                                                 var recipientMergeFields = new Dictionary<string, object>( mergeFields );
-                                                var recipient = new RockSMSMessageRecipient( person, smsNumber, recipientMergeFields );
+                                                var recipient = new RockSMSMessageRecipient( person, phoneNumber.ToSmsNumber(), recipientMergeFields );
                                                 recipients.Add( recipient );
                                                 recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
                                             }
