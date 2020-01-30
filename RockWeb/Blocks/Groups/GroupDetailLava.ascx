@@ -4,6 +4,12 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlGroupView" runat="server">
+            <div class="row" runat="server" id="dCommunicationsPreference">
+                <div class="col-md-12">
+                    Your communication preference: <Rock:Toggle ID="tglCommunicationPreference" runat="server" OnText="Email" OffText="SMS" ButtonSizeCssClass="btn-xs" OnCssClass="btn-info" OffCssClass="btn-info" OnCheckedChanged="tglCommunicationPreference_CheckedChanged" />
+                </div>
+            </div>
+            
             <asp:Literal ID="lContent" runat="server"></asp:Literal>
 
             <asp:Literal ID="lDebug" runat="server"></asp:Literal>
@@ -108,9 +114,15 @@
                 <asp:Panel ID="pnlGroupMemberRole" runat="server" CssClass="col-md-6">
                     <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" />
                 </asp:Panel>
-                <asp:Panel ID="pnlGroupMemberAttributes" runat="server" CssClass="col-md-6">
-                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributes" runat="server" />
-                </asp:Panel>
+                <div class="col-md-6">
+                    <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference">
+                        <asp:ListItem Text="Email" Value="1" />
+                        <asp:ListItem Text="SMS" Value="2" />
+                    </Rock:RockRadioButtonList>
+                    <asp:Panel ID="pnlGroupMemberAttributes" runat="server">
+                        <Rock:DynamicPlaceHolder ID="phGroupMemberAttributes" runat="server" />
+                    </asp:Panel>
+                </div>
             </div>
 
             <div class="actions">
