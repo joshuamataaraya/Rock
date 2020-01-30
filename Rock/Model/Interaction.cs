@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using System.Threading.Tasks;
 using Rock.Data;
 
 namespace Rock.Model
@@ -283,7 +283,8 @@ namespace Rock.Model
         {
             if ( !_isDeleted )
             {
-                StreakTypeService.HandleInteractionRecord( this );
+                // The data context save operation doesn't need to wait for this to complete
+                Task.Run( () => StreakTypeService.HandleInteractionRecord( this ) );
             }
 
             base.PostSaveChanges( dbContext );
