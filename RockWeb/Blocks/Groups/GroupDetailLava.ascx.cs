@@ -486,7 +486,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupMember.PersonId == CurrentPersonId )
             {
-                tglCommunicationPreference.Checked = groupMember.CommunicationPreference == CommunicationType.Email;
+                tglCommunicationPreference.Checked = groupMember.CommunicationPreference == CommunicationType.SMS;
             }
         }
 
@@ -572,7 +572,7 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                groupMember.CommunicationPreference = tglCommunicationPreference.Checked ? CommunicationType.Email : CommunicationType.SMS;
+                groupMember.CommunicationPreference = tglCommunicationPreference.Checked ? CommunicationType.SMS : CommunicationType.Email;
 
                 rockContext.SaveChanges();
             }
@@ -598,7 +598,7 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                tglCommunicationPreference.Checked  = groupMember.CommunicationPreference == CommunicationType.Email;
+                tglCommunicationPreference.Checked  = groupMember.CommunicationPreference == CommunicationType.SMS;
             }
         }
 
@@ -698,8 +698,6 @@ namespace RockWeb.Blocks.Groups
             {
                 tbDescription.Visible = false;
             }
-
-            dCommunicationsPreference.Visible = EnableCommunicationPreference;
         }
 
         ////
@@ -757,9 +755,12 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( "LavaTemplate" );
 
                 lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
+
+                dCommunicationsPreference.Visible = EnableCommunicationPreference && group.Members.Any(gm => gm.PersonId == CurrentPersonId);
             }
             else
             {
+                dCommunicationsPreference.Visible = false;
                 lContent.Text = "<div class='alert alert-warning'>No group was available from the querystring.</div>";
             }
         }
