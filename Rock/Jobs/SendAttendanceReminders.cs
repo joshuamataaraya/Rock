@@ -212,7 +212,7 @@ namespace Rock.Jobs
                 var alwaysSendSms = isSmsEnabled && sendUsingConfiguration.Equals( "SMS" );
                 var systemEmailGuid = dataMap.GetString( "SystemEmail" ).AsGuid();
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( systemEmailGuid );
-                
+
                 // Loop through the leaders
                 foreach ( var leader in leaders )
                 {
@@ -232,15 +232,24 @@ namespace Rock.Jobs
 
                         RockMessage message = null;
                         var recipients = new List<RockMessageRecipient>();
-                        
+
                         if ( sendSms )
                         {
                             var phoneNumber = leader.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
+                            var smsNumber = phoneNumber.ToSmsNumber();
 
-                            recipients.Add( new RockSMSMessageRecipient( leader.Person, phoneNumber.ToSmsNumber(), mergeObjects ) );
+                            if ( phoneNumber != null && !string.IsNullOrWhiteSpace( smsNumber ) )
+                            {
+                                recipients.Add( new RockSMSMessageRecipient( leader.Person, smsNumber, mergeObjects ) );
 
-                            message = new RockSMSMessage( systemCommunication );
-                            message.SetRecipients( recipients );
+                                message = new RockSMSMessage( systemCommunication );
+                                message.SetRecipients( recipients );
+                            }
+                            else
+                            {
+                                errorMessages.Add( string.Format( "No SMS number found for {0}.", leader.Person.ToString() ) );
+                                errorCount++;
+                            }
                         }
                         else
                         {
@@ -250,16 +259,20 @@ namespace Rock.Jobs
                             message.SetRecipients( recipients );
                         }
 
-                        var errors = new List<string>();
-                        
-                        if ( message.Send( out errors ) )
+
+
+                        if ( message != null )
                         {
-                            attendanceRemindersSent++;
-                        }
-                        else
-                        {
-                            errorCount += errors.Count;
-                            errorMessages.AddRange( errors );
+                            var errors = new List<string>();
+                            if ( message.Send( out errors ) )
+                            {
+                                attendanceRemindersSent++;
+                            }
+                            else
+                            {
+                                errorCount += errors.Count;
+                                errorMessages.AddRange( errors );
+                            }
                         }
                     }
                 }

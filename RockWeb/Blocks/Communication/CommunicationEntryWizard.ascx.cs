@@ -1747,7 +1747,7 @@ namespace RockWeb.Blocks.Communication
             sampleCommunicationRecipient.PersonAlias = sampleCommunicationRecipient.PersonAlias ?? new PersonAliasService( rockContext ).Get( sampleCommunicationRecipient.PersonAliasId );
             var mergeFields = sampleCommunicationRecipient.CommunicationMergeValues( commonMergeFields );
 
-            Rock.Communication.MediumComponent emailMediumWithActiveTransport = MediumContainer.Instance.GetMediumComponentsWithActiveTransports()
+            Rock.Communication.MediumComponent emailMediumWithActiveTransport = MediumContainer.Instance.GetActiveMediumComponentsWithActiveTransports()
                 .Where( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).FirstOrDefault();
 
             string communicationHtml = hfEmailEditorHtml.Value;

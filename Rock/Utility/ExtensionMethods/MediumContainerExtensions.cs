@@ -22,7 +22,7 @@ using Rock.Communication;
 namespace Rock
 {
     /// <summary>
-    /// Medium Container Extensions for access transport information.
+    /// Medium Container Extensions for accessing transport information.
     /// </summary>
     public static partial class ExtensionMethods
     {
@@ -31,9 +31,9 @@ namespace Rock
         /// </summary>
         /// <param name="mediumContainer">The medium container.</param>
         /// <returns></returns>
-        public static IEnumerable<MediumComponent> GetMediumComponentsWithActiveTransports( this MediumContainer mediumContainer )
+        public static IEnumerable<MediumComponent> GetActiveMediumComponentsWithActiveTransports( this MediumContainer mediumContainer )
         {
-            return mediumContainer.Components.Select( a => a.Value.Value ).Where( x => x.Transport != null && x.Transport.IsActive );
+            return mediumContainer.Components.Select( a => a.Value.Value ).Where( x => x.IsActive && x.Transport != null && x.Transport.IsActive );
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock
         /// </returns>
         public static bool HasActiveTransport( this MediumContainer mediumContainer, Guid guid )
         {
-            return mediumContainer.GetMediumComponentsWithActiveTransports().Any( a => a.EntityType.Guid == guid );
+            return mediumContainer.GetActiveMediumComponentsWithActiveTransports().Any( a => a.EntityType.Guid == guid );
         }
 
         /// <summary>

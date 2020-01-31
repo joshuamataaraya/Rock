@@ -32,6 +32,11 @@ namespace Rock
         /// <returns></returns>
         public static string ToSmsNumber( this PhoneNumber phoneNumber )
         {
+            if(phoneNumber == null )
+            {
+                return null;
+            }
+
             string smsNumber = phoneNumber.Number;
             if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
             {
