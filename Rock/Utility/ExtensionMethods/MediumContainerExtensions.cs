@@ -22,7 +22,7 @@ using Rock.Communication;
 namespace Rock
 {
     /// <summary>
-    /// Medium Container Extensions that don't reference Rock
+    /// Medium Container Extensions for access transport information.
     /// </summary>
     public static partial class ExtensionMethods
     {
