@@ -152,6 +152,12 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether enable communication preference has been set.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the enable communication preference has been set; otherwise, <c>false</c>.
+        /// </value>
         private bool EnableCommunicationPreference
         {
             get { return this.GetAttributeValue( "EnableCommunicationPreference" ).AsBooleanOrNull() ?? false; }
@@ -581,6 +587,9 @@ namespace RockWeb.Blocks.Groups
 
         #region Methods
 
+        /// <summary>
+        /// Binds the communication preference.
+        /// </summary>
         private void BindCommunicationPreference()
         {
             if ( CurrentPersonId == null || !EnableCommunicationPreference || _groupId.Equals( 0 ) )

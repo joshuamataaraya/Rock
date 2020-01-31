@@ -85,6 +85,10 @@ namespace Rock.Communication
             }
         }
 
+        /// <summary>
+        /// Initializes the SMS message.
+        /// </summary>
+        /// <param name="systemCommunication">The system communication.</param>
         private void InitializeSmsMessage( SystemCommunication systemCommunication )
         {
             if ( systemCommunication == null )
