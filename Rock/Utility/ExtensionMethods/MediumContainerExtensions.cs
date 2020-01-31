@@ -22,7 +22,7 @@ using Rock.Communication;
 namespace Rock
 {
     /// <summary>
-    /// Dictionary Extensions that don't reference Rock
+    /// Medium Container Extensions that don't reference Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
