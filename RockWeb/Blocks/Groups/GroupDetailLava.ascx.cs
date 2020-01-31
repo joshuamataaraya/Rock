@@ -598,7 +598,7 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                tglCommunicationPreference.Checked  = groupMember.CommunicationPreference == CommunicationType.SMS;
+                tglCommunicationPreference.Checked = groupMember.CommunicationPreference == CommunicationType.SMS;
             }
         }
 
@@ -756,7 +756,7 @@ namespace RockWeb.Blocks.Groups
 
                 lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
 
-                dCommunicationsPreference.Visible = EnableCommunicationPreference && group.Members.Any(gm => gm.PersonId == CurrentPersonId);
+                dCommunicationsPreference.Visible = EnableCommunicationPreference && group.Members.Any( gm => gm.PersonId == CurrentPersonId );
             }
             else
             {

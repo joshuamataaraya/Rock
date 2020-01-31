@@ -56,7 +56,7 @@ namespace Rock
         /// <returns>
         ///   <c>true</c> if an active SMS transport exists; otherwise, <c>false</c>.
         /// </returns>
-        public static bool HasActiveSmsTransport( this MediumContainer mediumContainer)
+        public static bool HasActiveSmsTransport( this MediumContainer mediumContainer )
         {
             return mediumContainer.HasActiveTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
         }
@@ -68,7 +68,7 @@ namespace Rock
         /// <returns>
         ///   <c>true</c> if an active email transport exists; otherwise, <c>false</c>.
         /// </returns>
-        public static bool HasActiveEmailTransport( this MediumContainer mediumContainer)
+        public static bool HasActiveEmailTransport( this MediumContainer mediumContainer )
         {
             return mediumContainer.HasActiveTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
         }

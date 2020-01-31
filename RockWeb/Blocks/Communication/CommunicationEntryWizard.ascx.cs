@@ -1013,7 +1013,7 @@ namespace RockWeb.Blocks.Communication
                     pnlRecipientFromListCount.Visible = false;
                 }
 
-                pnlRecipientFromListCount.Visible = listCount > 0;                
+                pnlRecipientFromListCount.Visible = listCount > 0;
             }
             else
             {

@@ -32,7 +32,7 @@ namespace Rock
         /// <returns></returns>
         public static string ToSmsNumber( this PhoneNumber phoneNumber )
         {
-            if(phoneNumber == null )
+            if ( phoneNumber == null )
             {
                 return null;
             }

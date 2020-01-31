@@ -189,7 +189,7 @@ namespace Rock.Workflow.Action
             }
 
             // Send the message
-            if ( recipients.Any() && ( !string.IsNullOrWhiteSpace( message ) || binaryFile != null) )
+            if ( recipients.Any() && ( !string.IsNullOrWhiteSpace( message ) || binaryFile != null ) )
             {
                 var smsMessage = new RockSMSMessage();
                 smsMessage.SetRecipients( recipients );

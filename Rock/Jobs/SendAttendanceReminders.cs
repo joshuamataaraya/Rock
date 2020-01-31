@@ -243,7 +243,7 @@ namespace Rock.Jobs
                         var phoneNumber = leader.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
                         var smsNumber = phoneNumber.ToSmsNumber();
 
-                        if ( sendSms && !string.IsNullOrWhiteSpace(smsNumber) )
+                        if ( sendSms && !string.IsNullOrWhiteSpace( smsNumber ) )
                         {
                             recipients.Add( new RockSMSMessageRecipient( leader.Person, smsNumber, mergeObjects ) );
 
