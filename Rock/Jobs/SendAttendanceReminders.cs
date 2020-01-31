@@ -207,11 +207,18 @@ namespace Rock.Jobs
                         m.Person.Email != string.Empty )
                     .ToList();
 
-                var isSmsEnabled = MediumContainer.Instance.HasActiveSmsTransport();
-                var alwaysSendEmail = !isSmsEnabled || sendUsingConfiguration.Equals( "Email" );
-                var alwaysSendSms = isSmsEnabled && sendUsingConfiguration.Equals( "SMS" );
                 var systemEmailGuid = dataMap.GetString( "SystemEmail" ).AsGuid();
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( systemEmailGuid );
+
+                var isSmsEnabled = MediumContainer.Instance.HasActiveSmsTransport();
+                var alwaysSendEmail = !isSmsEnabled || sendUsingConfiguration.Equals( "Email" ) && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
+                var alwaysSendSms = isSmsEnabled && sendUsingConfiguration.Equals( "SMS" );
+
+                if ( !sendUsingConfiguration.Equals( "Email" ) )
+                {
+                    errorMessages.Add( string.Format( "No SMS message found in system communication {0}.", systemCommunication.Title ) );
+                    errorCount++;
+                }
 
                 // Loop through the leaders
                 foreach ( var leader in leaders )
@@ -233,23 +240,15 @@ namespace Rock.Jobs
                         RockMessage message = null;
                         var recipients = new List<RockMessageRecipient>();
 
-                        if ( sendSms )
+                        var phoneNumber = leader.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
+                        var smsNumber = phoneNumber.ToSmsNumber();
+
+                        if ( sendSms && !string.IsNullOrWhiteSpace(smsNumber) )
                         {
-                            var phoneNumber = leader.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
-                            var smsNumber = phoneNumber.ToSmsNumber();
+                            recipients.Add( new RockSMSMessageRecipient( leader.Person, smsNumber, mergeObjects ) );
 
-                            if ( phoneNumber != null && !string.IsNullOrWhiteSpace( smsNumber ) )
-                            {
-                                recipients.Add( new RockSMSMessageRecipient( leader.Person, smsNumber, mergeObjects ) );
-
-                                message = new RockSMSMessage( systemCommunication );
-                                message.SetRecipients( recipients );
-                            }
-                            else
-                            {
-                                errorMessages.Add( string.Format( "No SMS number found for {0}.", leader.Person.ToString() ) );
-                                errorCount++;
-                            }
+                            message = new RockSMSMessage( systemCommunication );
+                            message.SetRecipients( recipients );
                         }
                         else
                         {
@@ -258,8 +257,6 @@ namespace Rock.Jobs
                             message = new RockEmailMessage( systemCommunication );
                             message.SetRecipients( recipients );
                         }
-
-
 
                         if ( message != null )
                         {
@@ -287,7 +284,7 @@ namespace Rock.Jobs
                 errorMessages.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                 string errors = sb.ToString();
                 context.Result += errors;
-                var exception = new Exception( errors );
+                var exception = new Exception( context.Result.ToString() );
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( exception, context2 );
                 throw exception;
