@@ -211,10 +211,10 @@ namespace Rock.Jobs
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( systemEmailGuid );
 
                 var isSmsEnabled = MediumContainer.Instance.HasActiveSmsTransport();
-                var alwaysSendEmail = !isSmsEnabled || sendUsingConfiguration.Equals( "Email" ) && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
+                var alwaysSendEmail = !isSmsEnabled || sendUsingConfiguration.Equals( "Email" ) || string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
                 var alwaysSendSms = isSmsEnabled && sendUsingConfiguration.Equals( "SMS" );
 
-                if ( !sendUsingConfiguration.Equals( "Email" ) )
+                if ( !sendUsingConfiguration.Equals( "Email" ) && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
                 {
                     errorMessages.Add( string.Format( "No SMS message found in system communication {0}.", systemCommunication.Title ) );
                     errorCount++;
@@ -243,7 +243,14 @@ namespace Rock.Jobs
                         var phoneNumber = leader.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
                         var smsNumber = phoneNumber.ToSmsNumber();
 
-                        if ( sendSms && !string.IsNullOrWhiteSpace( smsNumber ) )
+                        if ( sendSms && string.IsNullOrWhiteSpace( smsNumber ) )
+                        {
+                            sendSms = false;
+                            errorMessages.Add( string.Format( "No SMS number could be found for {0}.", leader.Person ) );
+                            errorCount++;
+                        }
+
+                        if ( sendSms )
                         {
                             recipients.Add( new RockSMSMessageRecipient( leader.Person, smsNumber, mergeObjects ) );
 
