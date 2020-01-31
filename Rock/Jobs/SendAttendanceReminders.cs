@@ -207,15 +207,21 @@ namespace Rock.Jobs
                         m.Person.Email != string.Empty )
                     .ToList();
 
-                var alwaysSendEmail = sendUsingConfiguration.Equals( "Email" );
-                var alwaysSendSms = sendUsingConfiguration.Equals( "SMS" );
+                var isSmsEnabled = MediumContainer.Instance.HasActiveSmsTransport();
+                var alwaysSendEmail = !isSmsEnabled || sendUsingConfiguration.Equals( "Email" );
+                var alwaysSendSms = isSmsEnabled && sendUsingConfiguration.Equals( "SMS" );
                 var systemEmailGuid = dataMap.GetString( "SystemEmail" ).AsGuid();
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( systemEmailGuid );
-
+                
                 // Loop through the leaders
                 foreach ( var leader in leaders )
                 {
-                    var sendSms = alwaysSendSms || ( !alwaysSendEmail && leader.CommunicationPreference == CommunicationType.SMS );
+                    var groupMemberSendSms = !alwaysSendEmail && leader.CommunicationPreference == CommunicationType.SMS;
+                    var personSendSms = !alwaysSendEmail
+                                            && leader.CommunicationPreference == CommunicationType.RecipientPreference
+                                            && leader.Person.CommunicationPreference == CommunicationType.SMS;
+
+                    var sendSms = alwaysSendSms || groupMemberSendSms || personSendSms;
 
                     foreach ( var group in occurrences.Where( o => o.Key == leader.GroupId ) )
                     {
@@ -245,16 +251,15 @@ namespace Rock.Jobs
                         }
 
                         var errors = new List<string>();
-                        message.Send( out errors );
-
-                        if ( errors.Any() )
+                        
+                        if ( message.Send( out errors ) )
                         {
-                            errorCount += errors.Count;
-                            errorMessages.AddRange( errors );
+                            attendanceRemindersSent++;
                         }
                         else
                         {
-                            attendanceRemindersSent++;
+                            errorCount += errors.Count;
+                            errorMessages.AddRange( errors );
                         }
                     }
                 }

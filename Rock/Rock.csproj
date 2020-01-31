@@ -523,6 +523,7 @@
     <Compile Include="UniversalSearch\IndexModels\DocumentIndex.cs" />
     <Compile Include="Reporting\ReportOutputBuilder.cs" />
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
+    <Compile Include="Utility\ExtensionMethods\MediumContainerExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExpandoObjectExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\PhoneNumberExtensions.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
